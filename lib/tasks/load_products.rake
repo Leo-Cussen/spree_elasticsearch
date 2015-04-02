@@ -1,9 +1,9 @@
 namespace :spree_elasticsearch do
   desc "Load all products into the index."
   task :load_products => :environment do
-    unless Elasticsearch::Model.client.indices.exists index: Spree::ElasticsearchSettings.index
+    unless Elasticsearch::Model.client.indices.exists index: Spree::Elasticsearch::Config.index
       Elasticsearch::Model.client.indices.create \
-        index: Spree::ElasticsearchSettings.index,
+        index: Spree::Elasticsearch::Config.index,
         body: {
           settings: {
             number_of_shards: 1,

@@ -23,9 +23,9 @@ module Spree
       end
 
       def retrieve_products
-        from = (@page - 1) * Spree::Config.products_per_page
+        from = (@page - 1) * per_page
         search_result = Spree::Product.__elasticsearch__.search(
-          Spree::Product::ElasticsearchQuery.new(
+          Spree::Elasticsearch::ProductQuery.new(
             query: query,
             taxons: taxons,
             browse_mode: browse_mode,
