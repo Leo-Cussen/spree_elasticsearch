@@ -11,7 +11,6 @@ RSpec.describe Spree::Search::Elasticsearch do
         :taxon => [1,2,3],
         :per_page => "10", :page => "2",
         search: {
-          properties: {one: 1},
           price: {
             min: "100",
             max: "120",
@@ -22,7 +21,7 @@ RSpec.describe Spree::Search::Elasticsearch do
 
     expected_settings = {
       :query => 'query', :price_min => 100.0, :price_max => 120.0,
-      :taxons => [1,2,3], :browse_mode => false, :properties => {one:1},
+      :taxons => [1,2,3], :browse_mode => false,
       :per_page => 10, :page => 2, :sorting => "sort_by"
     }
 
@@ -57,7 +56,7 @@ RSpec.describe Spree::Search::Elasticsearch do
         expect(Spree::Elasticsearch::ProductQuery).to have_received(:new).with (
           {
           :query => 'query', :price_min => 100.0, :price_max => 120.0,
-          :taxons => [1,2,3], :browse_mode => false, :properties => {one:1},
+          :taxons => [1,2,3], :browse_mode => false,
           :from => 10, :sorting => "sort_by"
           }
         )

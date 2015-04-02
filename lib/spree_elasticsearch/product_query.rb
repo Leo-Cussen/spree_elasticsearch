@@ -7,7 +7,6 @@ module Spree
       attribute :from, Integer, default: 0
       attribute :price_min, Float
       attribute :price_max, Float
-      attribute :properties, Hash
       attribute :query, String
       attribute :taxons, Array
       attribute :sorting, String
@@ -23,7 +22,6 @@ module Spree
       #       filter: {
       #         and: [
       #           { terms: { taxons: [] } },
-      #           { terms: { properties: [] } }
       #         ]
       #       }
       #     }
@@ -48,15 +46,6 @@ module Spree
         query = q
 
         and_filter = []
-        unless @properties.nil? || @properties.empty?
-          # transform properties from [{"key1" => ["value_a","value_b"]},{"key2" => ["value_a"]}
-          # to { terms: { properties: ["key1||value_a","key1||value_b"] }
-          #    { terms: { properties: ["key2||value_a"] }
-          # This enforces "and" relation between different property values and "or" relation between same property values
-          @properties = @properties.map {|k,v| [k].product(v)}.map do |pair|
-            and_filter << { terms: { properties: pair.map {|prop| prop.join("||")} } }
-          end
-        end
 
         sorting = case @sorting
                   when "name_asc"
@@ -76,7 +65,6 @@ module Spree
         # facets
         facets = {
           price: { statistical: { field: "price" } },
-          properties: { terms: { field: "properties", order: "count", size: 1000000 } },
           taxon_ids: { terms: { field: "taxon_ids", size: 1000000 } }
         }
 
@@ -91,7 +79,7 @@ module Spree
 
         # add query and filters to filtered
         result[:query][:filtered][:query] = query
-        # taxon and property filters have an effect on the facets
+        # taxon filters have an effect on the facets
         and_filter << { terms: { taxon_ids: valid_taxons } } unless valid_taxons.empty?
         # only return products that are available
         and_filter << { range: { available_on: { lte: "now" } } }

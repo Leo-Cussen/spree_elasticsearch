@@ -3,7 +3,6 @@ module Spree
     # The following search options are available.
     #   * taxon
     #   * keywords in name or description
-    #   * properties values
     class Elasticsearch <  Spree::Core::Search::Base
       include ::Virtus.model
 
@@ -12,7 +11,6 @@ module Spree
       attribute :price_max, Float
       attribute :taxons, Array
       attribute :browse_mode, Boolean, default: true
-      attribute :properties, Hash
       attribute :per_page, String
       attribute :page, String
       attribute :sorting, String
@@ -32,7 +30,6 @@ module Spree
             from: from,
             price_min: price_min,
             price_max: price_max,
-            properties: properties,
             sorting: sorting
           ).to_hash
         )
@@ -51,8 +48,6 @@ module Spree
           # price
           @price_min = params[:search][:price][:min].to_f
           @price_max = params[:search][:price][:max].to_f
-          # properties
-          @properties = params[:search][:properties]
         end
 
         @per_page = (params[:per_page].to_i <= 0) ? Spree::Config[:products_per_page] : params[:per_page].to_i

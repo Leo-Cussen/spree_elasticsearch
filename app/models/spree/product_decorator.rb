@@ -24,7 +24,6 @@ module Spree
       indexes :price, type: 'double'
       indexes :sku, type: 'string', index: 'not_analyzed'
       indexes :taxon_ids, type: 'string', index: 'not_analyzed'
-      indexes :properties, type: 'string', index: 'not_analyzed'
     end
 
     def as_indexed_json(options={})
@@ -42,15 +41,9 @@ module Spree
           }
         }
       })
-      result[:properties] = property_list unless property_list.empty?
       result[:taxon_ids] = taxons.map(&:self_and_ancestors).flatten.uniq.map(&:id) unless taxons.empty?
       result
     end
 
-    private
-
-    def property_list
-      product_properties.map{|pp| "#{pp.property.name}||#{pp.value}"}
-    end
   end
 end

@@ -2,69 +2,103 @@ require 'spec_helper'
 
 RSpec.describe Spree::Elasticsearch::ProductQuery do
   context "when initialized" do
-    let(:query) { 'search terms' }
+    let(:search_terms) { 'search terms' }
     let(:from) { 0 }
     let(:price_min) { 100 }
     let(:price_max) { 120 }
-    let(:properties) do
-      {one: 1}
-    end
-    let(:taxons) { [1,2,3] }
     let(:sorting) { 'score' }
 
-    subject do
-      Spree::Elasticsearch::ProductQuery.new(
-        query: query
-      )
+    let(:args) do
+      {
+        query: search_terms,
+        from: from,
+        price_min: price_min,
+        price_max: price_max,
+        sorting: sorting,
+      }
     end
+
+    subject { Spree::Elasticsearch::ProductQuery.new(args) }
 
     let(:hash) { subject.to_hash }
 
-    it "creates a proper query hash" do
-      expect(hash).to eql({
-        min_score: 0.1,
-        query: {
-          filtered:{
-            query: {
-              query_string: {
-                query: "search terms",
-                fields: ["name^5", "description", "sku"],
-                default_operator: "AND",
-                use_dis_max: true
-              }
-            },
-            filter: {
-              and: [
-                {range: { available_on: {lte: "now"} } }
-              ]
-            }
-          }
-        },
-        sort: [
+    describe "the hash created" do
+      it "specifies a min_score" do
+        expect(hash[:min_score]).to eql 0.1
+      end
+      describe "filtered query" do
+        let(:query) { hash[:query][:filtered] }
+
+        it "specifies a query string on name, description and sku" do
+          expect(query[:query][:query_string]).to eql({
+            query: "search terms",
+            fields: ["name^5", "description", "sku"],
+            default_operator: "AND",
+            use_dis_max: true
+          })
+        end
+
+        describe "filter" do
+          let(:filter) { query[:filter] }
+          it "is on availability range" do
+            expect(filter).to eql({
+              and: [{range: { available_on: {lte: "now"} } } ]
+            })
+          end
+        end
+      end
+
+      it "specifies a sort" do
+        expect(hash[:sort]).to eql([
           "_score",
-          {
-            "name.untouched"=>{
-              ignore_unmapped: true, order: "asc"
-            }
-          },
-          {
-            "price"=>{
-              ignore_unmapped: true, order: "asc"
-            }
-          }
-        ],
-        from: 0,
-        facets: {
-          price: { statistical: { field: "price" } },
-          properties: {
-            terms: { field: "properties", order: "count", size: 1000000 }
-          },
-          taxon_ids: {
+          { "name.untouched"=>{ ignore_unmapped: true, order: "asc" } },
+          { "price"=>{ ignore_unmapped: true, order: "asc" } }
+        ])
+      end
+
+      it "specifies a starting point" do
+        expect(hash[:from]).to eql 0
+      end
+
+      context "facets" do
+        let(:facets) { hash[:facets] }
+        it "include price" do
+          expect(facets[:price]).to eql({
+            statistical: { field: "price" }
+          })
+        end
+        it "include taxons" do
+          expect(facets[:taxon_ids]).to eql({
             terms: { field: "taxon_ids", size: 1000000 }
-          }
-        }
-      })
+          })
+        end
+      end
+
+      describe "when taxons are specified" do
+        let(:taxons) { [1,2,3] }
+        before do
+          args[:taxons] = taxons
+        end
+
+        describe "filter" do
+          let(:filter) { hash[:query][:filtered][:filter] }
+
+          it "includes taxons" do
+            expect(filter[:and]).to include({
+              terms: { taxon_ids: taxons }
+            })
+          end
+
+          context "when empty taxons are specified" do
+            let(:taxons) { [nil, 0, 1, 2, ""] }
+            it "removes them from the filter" do
+              expect(filter[:and]).to include({
+                terms: { taxon_ids: [0, 1, 2]}
+              })
+            end
+          end
+        end
+      end
     end
   end
 end
-
