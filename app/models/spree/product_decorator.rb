@@ -21,6 +21,7 @@ module Spree
       end
       indexes :description, analyzer: 'snowball'
       indexes :available_on, type: 'date', format: 'dateOptionalTime', include_in_all: false
+      indexes :available_until, type: 'date', format: 'dateOptionalTime', include_in_all: false
       indexes :price, type: 'double'
       indexes :sku, type: 'string', index: 'not_analyzed'
       indexes :taxon_ids, type: 'string', index: 'not_analyzed'
@@ -29,7 +30,7 @@ module Spree
     def as_indexed_json(options={})
       result = as_json({
         methods: [:price, :sku],
-        only: [:available_on, :description, :name],
+        only: [:available_on, :description, :name, :available_until],
         include: {
           variants: {
             only: [:sku],

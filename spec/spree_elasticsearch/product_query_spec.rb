@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 RSpec.describe Spree::Elasticsearch::ProductQuery do
-  context "when initialized" do
+  context 'when initialized' do
     let(:search_terms) { 'search terms' }
     let(:from) { 0 }
     let(:price_min) { 100 }
@@ -22,76 +22,84 @@ RSpec.describe Spree::Elasticsearch::ProductQuery do
 
     let(:hash) { subject.to_hash }
 
-    describe "the hash created" do
-      it "specifies a min_score" do
+    describe 'the hash created' do
+      it 'specifies a min_score' do
         expect(hash[:min_score]).to eql 0.1
       end
-      describe "filtered query" do
+      describe 'filtered query' do
         let(:query) { hash[:query][:filtered] }
 
-        it "specifies a query string on name, description and sku" do
+        it 'specifies a query string on name, description and sku' do
           expect(query[:query][:query_string]).to eql({
-            query: "search terms",
-            fields: ["name^5", "description", "sku"],
-            default_operator: "AND",
+            query: 'search terms',
+            fields: ['name^5', 'description', 'sku'],
+            default_operator: 'AND',
             use_dis_max: true
           })
         end
 
-        describe "filter" do
+        describe 'filter' do
           let(:filter) { query[:filter] }
-          it "is on availability range" do
+          it 'is on availability range' do
             expect(filter).to eql({
-              and: [{range: { available_on: {lte: "now"} } } ]
+              and: [
+                { range: { available_on: {lte: 'now'} } },
+                { or:
+                  [
+                    { range: { available_until: {gte: 'now'} } },
+                    { missing: { field: 'available_until'} }
+                  ]
+                }
+              ]
             })
           end
         end
       end
 
-      it "specifies a sort" do
+      it 'specifies a sort' do
         expect(hash[:sort]).to eql([
-          "_score",
-          { "name.untouched"=>{ ignore_unmapped: true, order: "asc" } },
-          { "price"=>{ ignore_unmapped: true, order: "asc" } }
+          '_score',
+          { 'name.untouched'=>{ ignore_unmapped: true, order: 'asc' } },
+          { 'price'=>{ ignore_unmapped: true, order: 'asc' } }
         ])
       end
 
-      it "specifies a starting point" do
+      it 'specifies a starting point' do
         expect(hash[:from]).to eql 0
       end
 
-      context "facets" do
+      context 'facets' do
         let(:facets) { hash[:facets] }
-        it "include price" do
+        it 'include price' do
           expect(facets[:price]).to eql({
-            statistical: { field: "price" }
+            statistical: { field: 'price' }
           })
         end
-        it "include taxons" do
+        it 'include taxons' do
           expect(facets[:taxon_ids]).to eql({
-            terms: { field: "taxon_ids", size: 1000000 }
+            terms: { field: 'taxon_ids', size: 1000000 }
           })
         end
       end
 
-      describe "when taxons are specified" do
+      describe 'when taxons are specified' do
         let(:taxons) { [1,2,3] }
         before do
           args[:taxons] = taxons
         end
 
-        describe "filter" do
+        describe 'filter' do
           let(:filter) { hash[:query][:filtered][:filter] }
 
-          it "includes taxons" do
+          it 'includes taxons' do
             expect(filter[:and]).to include({
               terms: { taxon_ids: taxons }
             })
           end
 
-          context "when empty taxons are specified" do
-            let(:taxons) { [nil, 0, 1, 2, ""] }
-            it "removes them from the filter" do
+          context 'when empty taxons are specified' do
+            let(:taxons) { [nil, 0, 1, 2, ''] }
+            it 'removes them from the filter' do
               expect(filter[:and]).to include({
                 terms: { taxon_ids: [0, 1, 2]}
               })

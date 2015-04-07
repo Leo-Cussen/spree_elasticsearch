@@ -48,24 +48,24 @@ module Spree
         and_filter = []
 
         sorting = case @sorting
-                  when "name_asc"
-                    [ {"name.untouched" => { ignore_unmapped: true, order: "asc" }}, {"price" => { ignore_unmapped: true, order: "asc" }}, "_score" ]
-                  when "name_desc"
-                    [ {"name.untouched" => { ignore_unmapped: true, order: "desc" }}, {"price" => { ignore_unmapped: true, order: "asc" }}, "_score" ]
-                  when "price_asc"
-                    [ {"price" => { ignore_unmapped: true, order: "asc" }}, {"name.untouched" => { ignore_unmapped: true, order: "asc" }}, "_score" ]
-                  when "price_desc"
-                    [ {"price" => { ignore_unmapped: true, order: "desc" }}, {"name.untouched" => { ignore_unmapped: true, order: "asc" }}, "_score" ]
-                  when "score"
-                    [ "_score", {"name.untouched" => { ignore_unmapped: true, order: "asc" }}, {"price" => { ignore_unmapped: true, order: "asc" }} ]
+                  when 'name_asc'
+                    [ {'name.untouched' => { ignore_unmapped: true, order: 'asc' }}, {'price' => { ignore_unmapped: true, order: 'asc' }}, '_score' ]
+                  when 'name_desc'
+                    [ {'name.untouched' => { ignore_unmapped: true, order: 'desc' }}, {'price' => { ignore_unmapped: true, order: 'asc' }}, '_score' ]
+                  when 'price_asc'
+                    [ {'price' => { ignore_unmapped: true, order: 'asc' }}, {'name.untouched' => { ignore_unmapped: true, order: 'asc' }}, '_score' ]
+                  when 'price_desc'
+                    [ {'price' => { ignore_unmapped: true, order: 'desc' }}, {'name.untouched' => { ignore_unmapped: true, order: 'asc' }}, '_score' ]
+                  when 'score'
+                    [ '_score', {'name.untouched' => { ignore_unmapped: true, order: 'asc' }}, {'price' => { ignore_unmapped: true, order: 'asc' }} ]
                   else
-                    [ "_score", {"name.untouched" => { ignore_unmapped: true, order: "asc" }}, {"price" => { ignore_unmapped: true, order: "asc" }} ]
+                    [ '_score', {'name.untouched' => { ignore_unmapped: true, order: 'asc' }}, {'price' => { ignore_unmapped: true, order: 'asc' }} ]
                   end
 
         # facets
         facets = {
-          price: { statistical: { field: "price" } },
-          taxon_ids: { terms: { field: "taxon_ids", size: 1000000 } }
+          price: { statistical: { field: 'price' } },
+          taxon_ids: { terms: { field: 'taxon_ids', size: 1000000 } }
         }
 
         # basic skeleton
@@ -82,7 +82,11 @@ module Spree
         # taxon filters have an effect on the facets
         and_filter << { terms: { taxon_ids: valid_taxons } } unless valid_taxons.empty?
         # only return products that are available
-        and_filter << { range: { available_on: { lte: "now" } } }
+        and_filter << { range: { available_on: { lte: 'now' } } }
+        and_filter << { or: [
+          { range: { available_until: {gte: 'now'} } },
+          { missing: { field: 'available_until'} }
+        ]}
         result[:query][:filtered][:filter] = { and: and_filter } unless and_filter.empty?
 
         # add price filter outside the query because it should have no effect on facets
