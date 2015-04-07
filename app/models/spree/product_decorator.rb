@@ -1,15 +1,9 @@
 module Spree
   Product.class_eval do
     include ::Elasticsearch::Model
-    include ::Elasticsearch::Model::Callbacks
-
-    after_commit on: [:update] do
-      if destroyed?
-        __elasticsearch__.delete_document
-      else
-        __elasticsearch__.update_document
-      end
-    end
+    after_commit lambda { __elasticsearch__.index_document  },  on: :create
+    after_commit lambda { __elasticsearch__.index_document  },  on: :update
+    after_commit lambda { __elasticsearch__.delete_document },  on: :destroy
 
     index_name Spree::Elasticsearch::Config.index
     document_type 'spree_product'
