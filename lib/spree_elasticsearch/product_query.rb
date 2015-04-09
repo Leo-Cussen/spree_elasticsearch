@@ -38,7 +38,7 @@ module Spree
             query_string: {
               query: query,
               fields: ['name^5','description','sku'],
-              default_operator: 'AND',
+              default_operator: 'OR',
               use_dis_max: true
             }
           }
