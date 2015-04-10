@@ -8,14 +8,27 @@ module Spree
     index_name Spree::Elasticsearch::Config.index
     document_type 'spree_product'
 
+    settings index: {
+      number_of_shards: 1,
+      number_of_replicas: 0,
+      analysis: {
+        analyzer: {
+          exact_english: {
+            type:      "standard",
+            stopwords: "_english_"
+          }
+        }
+      }
+    }
+
     mapping _all: {"index_analyzer" => "english", "search_analyzer" => "english"} do
       indexes :name, type: 'multi_field' do
-        indexes :name, type: 'string', analyzer: 'standard', boost: 3
+        indexes :name, type: 'string', analyzer: 'exact_english', boost: 3
         indexes :fuzzy, type: 'string', analyzer: 'english', boost: 1.5
         indexes :untouched, type: 'string', include_in_all: false, index: 'not_analyzed'
       end
       indexes :description, type: 'multi_field' do
-        indexes :description, type: 'string', analyzer: 'standard', boost: 2
+        indexes :description, type: 'string', analyzer: 'exact_english', boost: 2
         indexes :fuzzy, type: 'string', analyzer: 'english', boost: 1
       end
       indexes :available_on, type: 'date', format: 'dateOptionalTime', include_in_all: false
