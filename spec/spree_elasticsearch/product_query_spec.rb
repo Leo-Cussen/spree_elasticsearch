@@ -26,10 +26,10 @@ RSpec.describe Spree::Elasticsearch::ProductQuery do
       describe 'filtered query' do
         let(:query) { hash[:query][:filtered] }
 
-        it 'specifies a query string on name, description and sku' do
+        it 'specifies a query string on name, description and sku, including fuzzy indexes' do
           expect(query[:query][:query_string]).to eql({
             query: 'search terms',
-            fields: ['name', 'description', 'sku'],
+            fields: ['name', 'name.fuzzy', 'description', 'description.fuzzy', 'sku'],
             use_dis_max: true
           })
         end

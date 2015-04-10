@@ -37,7 +37,7 @@ module Spree
           q = {
             query_string: {
               query: query,
-              fields: ['name','description','sku'],
+              fields: ['name','name.fuzzy', 'description', 'description.fuzzy', 'sku'],
               use_dis_max: true
             }
           }

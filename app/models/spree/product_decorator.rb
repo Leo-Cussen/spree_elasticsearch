@@ -8,12 +8,16 @@ module Spree
     index_name Spree::Elasticsearch::Config.index
     document_type 'spree_product'
 
-    mapping _all: {"index_analyzer" => "nGram_analyzer", "search_analyzer" => "standard"} do
+    mapping _all: {"index_analyzer" => "english", "search_analyzer" => "english"} do
       indexes :name, type: 'multi_field' do
-        indexes :name, type: 'string', analyzer: 'nGram_analyzer', boost: 1.5
+        indexes :name, type: 'string', analyzer: 'standard', boost: 3
+        indexes :fuzzy, type: 'string', analyzer: 'english', boost: 1.5
         indexes :untouched, type: 'string', include_in_all: false, index: 'not_analyzed'
       end
-      indexes :description, analyzer: 'snowball'
+      indexes :description, type: 'multi_field' do
+        indexes :description, type: 'string', analyzer: 'standard', boost: 2
+        indexes :fuzzy, type: 'string', analyzer: 'english', boost: 1
+      end
       indexes :available_on, type: 'date', format: 'dateOptionalTime', include_in_all: false
       indexes :available_until, type: 'date', format: 'dateOptionalTime', include_in_all: false
       indexes :price, type: 'double'
@@ -37,7 +41,7 @@ module Spree
         }
       })
       result[:taxon_ids] = taxons.map(&:self_and_ancestors).flatten.uniq.map(&:id) unless taxons.empty?
-      result[:description] = description.strip_html_tags
+      result[:description] = description.try(:strip_html_tags)
       result
     end
 
