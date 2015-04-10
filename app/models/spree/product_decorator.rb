@@ -24,7 +24,7 @@ module Spree
     def as_indexed_json(options={})
       result = as_json({
         methods: [:price, :sku],
-        only: [:available_on, :description, :name, :available_until],
+        only: [:available_on, :name, :available_until],
         include: {
           variants: {
             only: [:sku],
@@ -37,6 +37,7 @@ module Spree
         }
       })
       result[:taxon_ids] = taxons.map(&:self_and_ancestors).flatten.uniq.map(&:id) unless taxons.empty?
+      result[:description] = description.strip_html_tags
       result
     end
 
