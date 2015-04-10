@@ -23,17 +23,13 @@ RSpec.describe Spree::Elasticsearch::ProductQuery do
     let(:hash) { subject.to_hash }
 
     describe 'the hash created' do
-      it 'specifies a min_score' do
-        expect(hash[:min_score]).to eql 0.1
-      end
       describe 'filtered query' do
         let(:query) { hash[:query][:filtered] }
 
         it 'specifies a query string on name, description and sku' do
           expect(query[:query][:query_string]).to eql({
             query: 'search terms',
-            fields: ['name^5', 'description', 'sku'],
-            default_operator: 'OR',
+            fields: ['name', 'description', 'sku'],
             use_dis_max: true
           })
         end

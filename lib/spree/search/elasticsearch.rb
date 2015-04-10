@@ -21,22 +21,41 @@ module Spree
       end
 
       def retrieve_products
-        from = (@page - 1) * per_page
-        search_result = Spree::Product.__elasticsearch__.search(
-          Spree::Elasticsearch::ProductQuery.new(
-            query: query,
-            taxons: taxons,
-            browse_mode: browse_mode,
-            from: from,
-            price_min: price_min,
-            price_max: price_max,
-            sorting: sorting
-          ).to_hash
+        Spree::Product.__elasticsearch__.search(
+          product_query.to_hash
+        ).limit(per_page).page(page).records
+      end
+
+      def explain(id)
+        explain_query(id, {query: product_query.to_hash[:query]})
+      end
+
+      def explain_query(id, query_hash)
+        ::Elasticsearch::Model.client.explain(
+          id: id,
+          body: query_hash,
+          index: Spree::Product.index_name,
+          type: Spree::Product.document_type
         )
-        search_result.limit(per_page).page(page).records
       end
 
       protected
+
+      def from
+        (page - 1) * per_page
+      end
+
+      def product_query
+        Spree::Elasticsearch::ProductQuery.new(
+          query: query,
+          taxons: taxons,
+          browse_mode: browse_mode,
+          from: from,
+          price_min: price_min,
+          price_max: price_max,
+          sorting: sorting
+        )
+      end
 
       # converts params to instance variables
       def prepare(params)

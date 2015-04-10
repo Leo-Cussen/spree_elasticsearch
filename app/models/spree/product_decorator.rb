@@ -10,7 +10,7 @@ module Spree
 
     mapping _all: {"index_analyzer" => "nGram_analyzer", "search_analyzer" => "standard"} do
       indexes :name, type: 'multi_field' do
-        indexes :name, type: 'string', analyzer: 'nGram_analyzer', boost: 100
+        indexes :name, type: 'string', analyzer: 'nGram_analyzer', boost: 1.5
         indexes :untouched, type: 'string', include_in_all: false, index: 'not_analyzed'
       end
       indexes :description, analyzer: 'snowball'

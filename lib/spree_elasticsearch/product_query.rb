@@ -37,8 +37,7 @@ module Spree
           q = {
             query_string: {
               query: query,
-              fields: ['name^5','description','sku'],
-              default_operator: 'OR',
+              fields: ['name','description','sku'],
               use_dis_max: true
             }
           }
@@ -70,7 +69,6 @@ module Spree
 
         # basic skeleton
         result = {
-          min_score: 0.1,
           query: { filtered: {} },
           sort: sorting,
           from: from,
