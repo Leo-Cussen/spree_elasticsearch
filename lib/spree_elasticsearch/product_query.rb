@@ -36,7 +36,7 @@ module Spree
         unless query.blank? # nil or empty
           q = {
             query_string: {
-              query: query,
+              query: escaped_query,
               fields: ['name','name.fuzzy', 'description', 'description.fuzzy', 'sku'],
               use_dis_max: true
             }
@@ -98,6 +98,10 @@ module Spree
       private
       def valid_taxons
         @valid_taxons ||= taxons.reject(&:blank?)
+      end
+
+      def escaped_query
+        @escaped_query ||= query.gsub(/\//, '\/')
       end
     end
 

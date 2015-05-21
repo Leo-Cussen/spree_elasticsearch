@@ -34,6 +34,13 @@ RSpec.describe Spree::Elasticsearch::ProductQuery do
           })
         end
 
+        context "with a query string that includes a forward slash" do
+          let(:search_terms) { 'search/terms/stuff' }
+          it 'is escaped' do
+            expect(query[:query][:query_string][:query]).to eql 'search\/terms\/stuff'
+          end
+        end
+
         describe 'filter' do
           let(:filter) { query[:filter] }
           it 'is on availability range' do
