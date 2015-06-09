@@ -96,7 +96,7 @@ RSpec.describe Spree::Elasticsearch::ProductQuery do
 
           it 'includes taxons' do
             expect(filter[:and]).to include({
-              terms: { taxon_ids: taxons }
+              terms: { taxon_ids: taxons, execution: 'and' }
             })
           end
 
@@ -104,7 +104,7 @@ RSpec.describe Spree::Elasticsearch::ProductQuery do
             let(:taxons) { [nil, 0, 1, 2, ''] }
             it 'removes them from the filter' do
               expect(filter[:and]).to include({
-                terms: { taxon_ids: [0, 1, 2]}
+                terms: { taxon_ids: [0, 1, 2], execution: 'and'}
               })
             end
           end

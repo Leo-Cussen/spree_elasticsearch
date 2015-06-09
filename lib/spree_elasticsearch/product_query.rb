@@ -78,7 +78,7 @@ module Spree
         # add query and filters to filtered
         result[:query][:filtered][:query] = query
         # taxon filters have an effect on the facets
-        and_filter << { terms: { taxon_ids: valid_taxons } } unless valid_taxons.empty?
+        and_filter << taxons_filter unless valid_taxons.empty?
         # only return products that are available
         and_filter << { range: { available_on: { lte: 'now' } } }
         and_filter << { or: [
@@ -96,6 +96,17 @@ module Spree
       end
 
       private
+
+      def taxons_filter
+        {
+          terms:
+          {
+            taxon_ids: valid_taxons,
+            execution: 'and'
+          }
+        }
+      end
+
       def valid_taxons
         @valid_taxons ||= taxons.reject(&:blank?)
       end
