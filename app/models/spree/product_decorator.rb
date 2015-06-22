@@ -9,11 +9,15 @@ module Spree
     after_destroy :delete_document
 
     def index_document
-      __elasticsearch__.index_document
+      __elasticsearch__.index_document if elasticsearch?
     end
 
     def delete_document
-      __elasticsearch__.delete_document
+      __elasticsearch__.delete_document if elasticsearch?
+    end
+
+    def elasticsearch?
+      true
     end
 
     index_name Spree::Elasticsearch::Config.index
