@@ -9,19 +9,12 @@ RSpec.describe Spree::Search::Elasticsearch do
         :browse_mode => false,
         :sorting => "sort_by",
         :taxon => [1,2,3],
-        :per_page => "10", :page => "2",
-        search: {
-          price: {
-            min: "100",
-            max: "120",
-          }
-        }
+        :per_page => "10", :page => "2"
       }
     end
 
     expected_settings = {
-      :query => 'query', :price_min => 100.0, :price_max => 120.0,
-      :taxons => [1,2,3], :browse_mode => false,
+      :query => 'query', :taxons => [1,2,3], :browse_mode => false,
       :per_page => 10, :page => 2, :sorting => "sort_by"
     }
 
@@ -55,8 +48,7 @@ RSpec.describe Spree::Search::Elasticsearch do
       it "initializes a configured ProductQuery" do
         expect(Spree::Elasticsearch::ProductQuery).to have_received(:new).with (
           {
-          :query => 'query', :price_min => 100.0, :price_max => 120.0,
-          :taxons => [1,2,3], :browse_mode => false,
+          :query => 'query', :taxons => [1,2,3], :browse_mode => false,
           :from => 10, :sorting => "sort_by"
           }
         )

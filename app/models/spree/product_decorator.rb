@@ -51,6 +51,8 @@ module Spree
       indexes :price, type: 'double'
       indexes :sku, type: 'string', index: 'not_analyzed'
       indexes :taxon_ids, type: 'string', index: 'not_analyzed'
+
+      indexes :start_time, type: 'date', format: 'dateOptionalTime', include_in_all: false
     end
 
     def as_indexed_json(options={})
@@ -72,6 +74,5 @@ module Spree
       result[:description] = description.try(:strip_html_tags)
       result
     end
-
   end
 end

@@ -4,16 +4,12 @@ RSpec.describe Spree::Elasticsearch::ProductQuery do
   context 'when initialized' do
     let(:search_terms) { 'search terms' }
     let(:from) { 0 }
-    let(:price_min) { 100 }
-    let(:price_max) { 120 }
     let(:sorting) { 'score' }
 
     let(:args) do
       {
         query: search_terms,
         from: from,
-        price_min: price_min,
-        price_max: price_max,
         sorting: sorting,
       }
     end
@@ -62,8 +58,7 @@ RSpec.describe Spree::Elasticsearch::ProductQuery do
       it 'specifies a sort' do
         expect(hash[:sort]).to eql([
           '_score',
-          { 'name.untouched'=>{ ignore_unmapped: true, order: 'asc' } },
-          { 'price'=>{ ignore_unmapped: true, order: 'asc' } }
+          { 'name.untouched'=>{ ignore_unmapped: true, order: 'asc' } }
         ])
       end
 
@@ -73,11 +68,6 @@ RSpec.describe Spree::Elasticsearch::ProductQuery do
 
       context 'facets' do
         let(:facets) { hash[:facets] }
-        it 'include price' do
-          expect(facets[:price]).to eql({
-            statistical: { field: 'price' }
-          })
-        end
         it 'include taxons' do
           expect(facets[:taxon_ids]).to eql({
             terms: { field: 'taxon_ids', size: 1000000 }

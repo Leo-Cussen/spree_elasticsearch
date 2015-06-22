@@ -7,8 +7,6 @@ module Spree
       include ::Virtus.model
 
       attribute :query, String
-      attribute :price_min, Float
-      attribute :price_max, Float
       attribute :taxons, Array
       attribute :browse_mode, Boolean, default: true
       attribute :per_page, String
@@ -46,15 +44,17 @@ module Spree
       end
 
       def product_query
-        Spree::Elasticsearch::ProductQuery.new(
+        product_query_class.new(
           query: query,
           taxons: taxons,
           browse_mode: browse_mode,
           from: from,
-          price_min: price_min,
-          price_max: price_max,
           sorting: sorting
         )
+      end
+
+      def product_query_class
+        Spree::Elasticsearch::ProductQuery
       end
 
       # converts params to instance variables
@@ -63,11 +63,6 @@ module Spree
         @sorting = params[:sorting]
         @taxons = params[:taxon] unless params[:taxon].nil?
         @browse_mode = params[:browse_mode] unless params[:browse_mode].nil?
-        if params[:search] && params[:search][:price]
-          # price
-          @price_min = params[:search][:price][:min].to_f
-          @price_max = params[:search][:price][:max].to_f
-        end
 
         @per_page = (params[:per_page].to_i <= 0) ? Spree::Config[:products_per_page] : params[:per_page].to_i
         @page = (params[:page].to_i <= 0) ? 1 : params[:page].to_i
