@@ -52,7 +52,9 @@ module Spree
       indexes :sku, type: 'string', index: 'not_analyzed'
       indexes :taxon_ids, type: 'string', index: 'not_analyzed'
 
-      indexes :start_time, type: 'date', format: 'dateOptionalTime', include_in_all: false
+      indexes :specialisation, type: 'nested' do
+        indexes :start_time, type: 'date', format: 'dateOptionalTime', include_in_all: false
+      end
     end
 
     def as_indexed_json(options={})
