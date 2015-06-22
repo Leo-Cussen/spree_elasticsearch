@@ -1,9 +1,20 @@
 module Spree
   Product.class_eval do
     include ::Elasticsearch::Model
-    after_commit lambda { __elasticsearch__.index_document  },  on: :create
-    after_commit lambda { __elasticsearch__.index_document  },  on: :update
-    after_commit lambda { __elasticsearch__.delete_document },  on: :destroy
+    after_commit :index_document,  on: :create
+
+    before_restore :index_document
+    after_update :index_document
+
+    after_destroy :delete_document
+
+    def index_document
+      __elasticsearch__.index_document
+    end
+
+    def delete_document
+      __elasticsearch__.delete_document
+    end
 
     index_name Spree::Elasticsearch::Config.index
     document_type 'spree_product'

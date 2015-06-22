@@ -2,10 +2,11 @@ require 'spec_helper'
 
 RSpec.describe Spree::Product do
   def with_transaction
-    ::ActiveRecord::Base.connection.commit_transaction if ::ActiveRecord::Base.connection.transaction_open?
-    ::ActiveRecord::Base.connection.begin_transaction
+    conn = ::ActiveRecord::Base.connection
+    conn.commit_transaction if conn.transaction_open?
+    conn.begin_transaction
     result = yield
-    ::ActiveRecord::Base.connection.commit_transaction
+    conn.commit_transaction
     result
   end
 
@@ -62,21 +63,22 @@ RSpec.describe Spree::Product do
     end
 
     describe "when updated and committed" do
-      context "if set to 'destroyed'" do
-        it "deletes the document from the index" do
-          with_transaction do
-            expect(elasticsearch).to receive(:delete_document)
-            subject.update!(deleted_at: DateTime.now)
-          end
+      it "is completely re-indexed" do
+        with_transaction do
+          expect(elasticsearch).to receive(:index_document)
+          subject.update!(name: "Stuff")
         end
       end
+    end
 
-      context "if not set to 'destroyed'" do
-        it "is completely re-indexed" do
-          with_transaction do
-            expect(elasticsearch).to receive(:index_document)
-            subject.update!(name: "Stuff")
-          end
+    context "when deleted" do
+      #it "is indexed" do
+      #  expect(elasticsearch).to have_received(:index_document)
+      #end
+      it "deletes the document from the index" do
+        with_transaction do
+          expect(elasticsearch).to receive(:delete_document)
+          subject.destroy
         end
       end
     end
