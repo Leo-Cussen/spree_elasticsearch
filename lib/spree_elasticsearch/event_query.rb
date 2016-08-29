@@ -3,13 +3,37 @@ module Spree
     # Class used to query elasticsearch for event products. The idea is that the query is dynamically build based on the parameters.
     class EventQuery < ProductQuery
 
+      attribute :starting, {}
+
       def add_and_filters
         super
-        @and_filter << { range: { 'specialisation.start_time' => { gte: 'now' } } }
+
+        @and_filter << date_filter
       end
 
       def sort
-          [ {'specialisation.start_time' => { ignore_unmapped: true, order: 'asc' }} ]
+      private
+
+      def date_filter
+        filter = { gte: 'now'}
+
+        if date_from = format_date(starting['from'])
+          filter[:gte] = "#{date_from}"
+        end
+
+        if date_upto = format_date(starting['upto'])
+          filter[:lte] = "#{date_upto}"
+        end
+
+        { range: { 'specialisation.start_time' => filter } }
+      end
+
+      def format_date(value)
+        return unless value
+
+        Date.parse(value)
+      rescue ArgumentError
+        nil
       end
     end
   end
