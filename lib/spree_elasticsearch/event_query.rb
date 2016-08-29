@@ -12,6 +12,9 @@ module Spree
       end
 
       def sort
+        [ {'specialisation.start_time' => { ignore_unmapped: true, order: 'asc' }} ]
+      end
+
       private
 
       def date_filter
