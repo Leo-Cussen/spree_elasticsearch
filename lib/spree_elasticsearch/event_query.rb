@@ -18,23 +18,23 @@ module Spree
       private
 
       def date_filter
-        filter = { gte: 'now'}
+        filter = { from: 'now'}
 
-        if date_from = format_date(starting['from'])
-          filter[:gte] = "#{date_from}"
+        if date_from = format_date(starting['from'], starting['time_zone'])
+          filter[:from] = "#{date_from.beginning_of_day.iso8601}"
         end
 
-        if date_upto = format_date(starting['upto'])
-          filter[:lte] = "#{date_upto}"
+        if date_upto = format_date(starting['upto'], starting['time_zone'])
+          filter[:to] = "#{date_upto.end_of_day.iso8601}"
         end
 
         { range: { 'specialisation.start_time' => filter } }
       end
 
-      def format_date(value)
+      def format_date(value, time_zone)
         return unless value
 
-        Date.parse(value)
+        Date.parse(value).in_time_zone(time_zone)
       rescue ArgumentError
         nil
       end
