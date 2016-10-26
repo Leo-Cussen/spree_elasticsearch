@@ -38,7 +38,7 @@ module Spree
           },
           sort: sort,
           from: from,
-          facets: facets
+          aggregations: facets
         }
 
         add_filtering
