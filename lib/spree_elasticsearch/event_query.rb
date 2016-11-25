@@ -12,7 +12,18 @@ module Spree
       end
 
       def sort
-        [ {'specialisation.start_time' => { ignore_unmapped: true, order: 'asc' }} ]
+        if query.blank?
+          [ {'specialisation.start_time' => { ignore_unmapped: true, order: 'asc' }} ]
+        else
+          case @sorting
+          when 'name_asc'
+            [ {'name.untouched' => { ignore_unmapped: true, order: 'asc' }}, '_score' ]
+          when 'name_desc'
+            [ {'name.untouched' => { ignore_unmapped: true, order: 'desc' }}, '_score' ]
+          else
+            [ '_score', {'name.untouched' => { ignore_unmapped: true, order: 'asc' }} ]
+          end
+        end
       end
 
       private
