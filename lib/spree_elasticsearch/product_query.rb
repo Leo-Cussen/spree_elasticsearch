@@ -72,7 +72,7 @@ module Spree
           {
             query_string: {
               query: escaped_query,
-              fields: ['name','name.fuzzy', 'description', 'description.fuzzy', 'sku'],
+              fields: ['name', 'name.fuzzy', 'description', 'description.fuzzy', 'sku'],
               use_dis_max: true
             }
           }

@@ -50,6 +50,7 @@ module Spree
       indexes :available_until, type: 'date', format: 'dateOptionalTime', include_in_all: false
       indexes :price, type: 'double'
       indexes :sku, type: 'string', index: 'not_analyzed'
+      indexes :specialisation_type, type: 'string', index: 'not_analyzed'
       indexes :taxon_ids, type: 'string', index: 'not_analyzed'
 
       indexes :specialisation, type: 'object' do
@@ -60,7 +61,7 @@ module Spree
     def as_indexed_json(options={})
       result = as_json({
         methods: [:price, :sku],
-        only: [:available_on, :name, :available_until],
+        only: [:available_on, :available_until, :name, :specialisation_type],
         include: {
           variants: {
             only: [:sku],
